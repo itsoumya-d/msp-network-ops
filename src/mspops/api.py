@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from mspops.assets import client_summary, risk_flags
 from mspops.models import Asset, Event, Ticket
+from mspops.finops import CostRecord, ResourceMetric, budget_burn, detect_anomalies, recommendations
 from mspops.netops import check_compliance, outage_triage
 from mspops.tickets import breach_summary, triage
 
@@ -37,6 +38,29 @@ class EventIn(BaseModel):
     device: str
     state: str
     severity: str = "high"
+
+
+class CostRecordIn(BaseModel):
+    account: str
+    service: str
+    month: str
+    amount: float
+
+
+class ResourceMetricIn(BaseModel):
+    resource_id: str
+    account: str
+    service: str
+    cpu_pct: float
+    memory_pct: float
+    attached: bool
+    monthly_cost: float
+
+
+class BudgetIn(BaseModel):
+    records: list[CostRecordIn]
+    budget: float
+    month: str
 
 
 app = FastAPI(title="MSP and network ops automation", version="0.1.0")
@@ -105,3 +129,18 @@ def compliance(config: dict) -> dict[str, object]:
 @app.post("/netops/outage")
 def outage(events: list[EventIn]) -> dict[str, object]:
     return outage_triage([Event(**e.model_dump()) for e in events])
+
+
+@app.post("/finops/anomalies")
+def finops_anomalies(records: list[CostRecordIn]) -> list[dict]:
+    return detect_anomalies([CostRecord(**r.model_dump()) for r in records])
+
+
+@app.post("/finops/recommendations")
+def finops_recommendations(resources: list[ResourceMetricIn]) -> list[dict]:
+    return recommendations([ResourceMetric(**r.model_dump()) for r in resources])
+
+
+@app.post("/finops/budget")
+def finops_budget(payload: BudgetIn) -> dict:
+    return budget_burn([CostRecord(**r.model_dump()) for r in payload.records], payload.budget, payload.month)

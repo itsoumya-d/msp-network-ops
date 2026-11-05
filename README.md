@@ -13,6 +13,8 @@ enterprise network teams run every day:
 - Network configuration compliance: Telnet, SSH v2, NTP, SNMPv3, backup age,
   supported firmware, default credentials.
 - Site-vs-device outage triage with runbook guidance.
+- Cloud cost governance: month-over-month anomaly detection, unattached/idle/
+  overprovisioned resource recommendations and budget burn.
 - FastAPI surface and synthetic demo data.
 
 This is a **reference implementation**, not a claim of production RMM/PSA
@@ -30,6 +32,12 @@ uvicorn mspops.api:app --reload
 python -m mspops.generate
 ```
 
+## Managed cloud provider use case
+
+Built for MSP/ISP and managed-cloud workflows such as DDS IT: service-desk
+triage, SLA control, asset risk, network configuration compliance, outage
+triage and Datadog-style cloud cost governance.
+
 ## API
 
 - `POST /tickets/triage`
@@ -37,6 +45,9 @@ python -m mspops.generate
 - `POST /assets/risk`
 - `POST /netops/compliance`
 - `POST /netops/outage`
+- `POST /finops/anomalies`
+- `POST /finops/recommendations`
+- `POST /finops/budget`
 - `GET /health`
 
 ## License
