@@ -15,6 +15,9 @@ enterprise network teams run every day:
 - Cloud snapshot recovery and ransomware resilience posture verification:
   immutable WORM lock, secondary vault air gaps, Key Vault purge protection,
   RPO threshold tracking, and automated restore drill validation.
+- Domain email security and anti-spoofing posture governance: SPF qualifier &
+  lookup count limits, DKIM selector & RSA key size auditing, DMARC enforcement
+  (reject/quarantine vs none) with reporting URIs, and BIMI brand indicators.
 - Site-vs-device outage triage with runbook guidance.
 - Cloud cost governance: month-over-month anomaly detection, unattached/idle/
   overprovisioned resource recommendations and budget burn.
@@ -50,6 +53,7 @@ backup resilience verification, and cost governance.
 - `POST /netops/outage`
 - `POST /identity/audit`
 - `POST /security/posture`
+- `POST /security/email-posture`
 - `POST /recovery/resilience`
 - `POST /finops/anomalies`
 - `POST /finops/recommendations`
