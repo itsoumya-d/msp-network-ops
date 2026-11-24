@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import datetime, timezone
+from typing import Optional
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -18,6 +20,7 @@ from mspops.identity import (
 from mspops.models import Asset, Event, Ticket
 from mspops.finops import CostRecord, ResourceMetric, budget_burn, detect_anomalies, recommendations
 from mspops.netops import check_compliance, outage_triage
+from mspops.resilience import SnapshotPolicy, calculate_resilience
 from mspops.tickets import breach_summary, triage
 
 
@@ -70,6 +73,25 @@ class BudgetIn(BaseModel):
     records: list[CostRecordIn]
     budget: float
     month: str
+
+
+class SnapshotPolicyIn(BaseModel):
+    workload_id: str
+    workload_type: str = "azure_vm"
+    tier: int = 1
+    last_snapshot_time: str
+    immutable_lock: bool = True
+    secondary_vault_replicated: bool = True
+    purge_protection_enabled: bool = True
+    encryption_cmk: bool = True
+    last_restore_test_date: Optional[str] = None
+    snapshot_retention_days: int = 30
+    data_size_gb: float = 100.0
+
+
+class ResilienceAuditIn(BaseModel):
+    client_id: str
+    policies: list[SnapshotPolicyIn]
 
 
 app = FastAPI(title="MSP and network ops automation", version="0.1.0")
@@ -166,3 +188,25 @@ def security_posture(payload: PostureRequest) -> dict:
     report = evaluate_posture(payload.identity, payload.devices)
     return report.model_dump()
 
+
+@app.post("/recovery/resilience")
+def recovery_resilience(payload: ResilienceAuditIn) -> dict:
+    policies = []
+    for p in payload.policies:
+        snap_dt = datetime.fromisoformat(p.last_snapshot_time.replace("Z", "+00:00"))
+        test_dt = datetime.fromisoformat(p.last_restore_test_date.replace("Z", "+00:00")) if p.last_restore_test_date else None
+        policies.append(SnapshotPolicy(
+            workload_id=p.workload_id,
+            workload_type=p.workload_type,
+            tier=p.tier,
+            last_snapshot_time=snap_dt,
+            immutable_lock=p.immutable_lock,
+            secondary_vault_replicated=p.secondary_vault_replicated,
+            purge_protection_enabled=p.purge_protection_enabled,
+            encryption_cmk=p.encryption_cmk,
+            last_restore_test_date=test_dt,
+            snapshot_retention_days=p.snapshot_retention_days,
+            data_size_gb=p.data_size_gb,
+        ))
+    report = calculate_resilience(payload.client_id, policies)
+    return asdict(report)

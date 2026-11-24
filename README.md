@@ -12,6 +12,9 @@ enterprise network teams run every day:
   inventory.
 - Network configuration compliance: Telnet, SSH v2, NTP, SNMPv3, backup age,
   supported firmware, default credentials.
+- Cloud snapshot recovery and ransomware resilience posture verification:
+  immutable WORM lock, secondary vault air gaps, Key Vault purge protection,
+  RPO threshold tracking, and automated restore drill validation.
 - Site-vs-device outage triage with runbook guidance.
 - Cloud cost governance: month-over-month anomaly detection, unattached/idle/
   overprovisioned resource recommendations and budget burn.
@@ -34,9 +37,9 @@ python -m mspops.generate
 
 ## Managed cloud provider use case
 
-Built for MSP/ISP and managed-cloud workflows such as DDS IT: service-desk
-triage, SLA control, asset risk, network configuration compliance, outage
-triage and Datadog-style cloud cost governance.
+Built for MSP/ISP and managed-cloud operations: service-desk triage, SLA
+control, asset risk, network configuration compliance, outage triage, cloud
+backup resilience verification, and cost governance.
 
 ## API
 
@@ -47,6 +50,7 @@ triage and Datadog-style cloud cost governance.
 - `POST /netops/outage`
 - `POST /identity/audit`
 - `POST /security/posture`
+- `POST /recovery/resilience`
 - `POST /finops/anomalies`
 - `POST /finops/recommendations`
 - `POST /finops/budget`
