@@ -22,6 +22,7 @@ from mspops.finops import CostRecord, ResourceMetric, budget_burn, detect_anomal
 from mspops.netops import check_compliance, outage_triage
 from mspops.resilience import SnapshotPolicy, calculate_resilience
 from mspops.email_security import audit_domain_email_security
+from mspops.smb1001_posture import SMB1001Auditor
 from mspops.tickets import breach_summary, triage
 
 
@@ -233,4 +234,34 @@ def email_security_posture(payload: EmailSecurityIn) -> dict:
         bimi_raw=payload.bimi_raw,
     )
     return report.to_dict()
+
+
+class SMB1001In(BaseModel):
+    tenant_id: str
+    tenant_name: str = ""
+    mfa_admin_pct: float = 1.0
+    mfa_all_users_pct: float = 1.0
+    immutable_backups_enabled: bool = True
+    backup_frequency_hours: int = 24
+    critical_patch_sla_days: int = 14
+    endpoint_av_coverage_pct: float = 1.0
+    least_privilege_enforced: bool = True
+    edr_coverage_pct: float = 0.95
+    network_segmentation_enabled: bool = True
+    incident_response_plan_documented: bool = True
+    inactive_account_revocation_days: int = 30
+    disk_encryption_pct: float = 1.0
+    siem_logging_retention_days: int = 90
+    vulnerability_scan_frequency_days: int = 30
+    supply_chain_risk_assessed: bool = True
+    annual_penetration_tested: bool = True
+    ztna_conditional_access_enabled: bool = True
+
+
+@app.post("/security/smb1001-posture")
+def smb1001_posture(payload: SMB1001In) -> dict:
+    data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
+    report = SMB1001Auditor.audit_tenant(data)
+    return report.to_dict()
+
 
