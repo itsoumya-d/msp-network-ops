@@ -21,6 +21,7 @@ from mspops.models import Asset, Event, Ticket
 from mspops.finops import CostRecord, ResourceMetric, budget_burn, detect_anomalies, recommendations
 from mspops.netops import check_compliance, outage_triage
 from mspops.resilience import SnapshotPolicy, calculate_resilience
+from mspops.email_security import audit_domain_email_security
 from mspops.tickets import breach_summary, triage
 
 
@@ -189,6 +190,15 @@ def security_posture(payload: PostureRequest) -> dict:
     return report.model_dump()
 
 
+class EmailSecurityIn(BaseModel):
+    domain: str
+    spf_raw: Optional[str] = None
+    dkim_selector: str = ""
+    dkim_key_bits: int = 0
+    dmarc_raw: Optional[str] = None
+    bimi_raw: Optional[str] = None
+
+
 @app.post("/recovery/resilience")
 def recovery_resilience(payload: ResilienceAuditIn) -> dict:
     policies = []
@@ -210,3 +220,17 @@ def recovery_resilience(payload: ResilienceAuditIn) -> dict:
         ))
     report = calculate_resilience(payload.client_id, policies)
     return asdict(report)
+
+
+@app.post("/security/email-posture")
+def email_security_posture(payload: EmailSecurityIn) -> dict:
+    report = audit_domain_email_security(
+        domain=payload.domain,
+        spf_raw=payload.spf_raw,
+        dkim_selector=payload.dkim_selector,
+        dkim_key_bits=payload.dkim_key_bits,
+        dmarc_raw=payload.dmarc_raw,
+        bimi_raw=payload.bimi_raw,
+    )
+    return report.to_dict()
+
