@@ -6,6 +6,15 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
 from mspops.assets import client_summary, risk_flags
+from mspops.identity import (
+    EndpointSecurityDevice,
+    Finding,
+    PostureReport,
+    PostureRequest,
+    TenantIdentityAudit,
+    audit_identity_posture,
+    evaluate_posture,
+)
 from mspops.models import Asset, Event, Ticket
 from mspops.finops import CostRecord, ResourceMetric, budget_burn, detect_anomalies, recommendations
 from mspops.netops import check_compliance, outage_triage
@@ -144,3 +153,16 @@ def finops_recommendations(resources: list[ResourceMetricIn]) -> list[dict]:
 @app.post("/finops/budget")
 def finops_budget(payload: BudgetIn) -> dict:
     return budget_burn([CostRecord(**r.model_dump()) for r in payload.records], payload.budget, payload.month)
+
+
+@app.post("/identity/audit")
+def identity_audit(payload: TenantIdentityAudit) -> list[dict]:
+    findings = audit_identity_posture(payload)
+    return [f.model_dump() for f in findings]
+
+
+@app.post("/security/posture")
+def security_posture(payload: PostureRequest) -> dict:
+    report = evaluate_posture(payload.identity, payload.devices)
+    return report.model_dump()
+
