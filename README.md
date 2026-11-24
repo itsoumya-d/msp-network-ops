@@ -45,6 +45,8 @@ triage and Datadog-style cloud cost governance.
 - `POST /assets/risk`
 - `POST /netops/compliance`
 - `POST /netops/outage`
+- `POST /identity/audit`
+- `POST /security/posture`
 - `POST /finops/anomalies`
 - `POST /finops/recommendations`
 - `POST /finops/budget`
