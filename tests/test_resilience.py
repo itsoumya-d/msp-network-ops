@@ -81,6 +81,8 @@ def test_vulnerable_workload_triggers_work_orders():
     assert "NO_RESTORE_DRILL" in categories
 
 def test_api_endpoint_recovery_resilience():
+    recent_snap = (datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat()
+    recent_test = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat()
     payload = {
         "client_id": "CLIENT-MSP-99",
         "policies": [
@@ -88,12 +90,12 @@ def test_api_endpoint_recovery_resilience():
                 "workload_id": "DB-CORE",
                 "workload_type": "sql_database",
                 "tier": 1,
-                "last_snapshot_time": "2026-11-24T11:45:00Z",
+                "last_snapshot_time": recent_snap,
                 "immutable_lock": True,
                 "secondary_vault_replicated": True,
                 "purge_protection_enabled": True,
                 "encryption_cmk": True,
-                "last_restore_test_date": "2026-11-10T00:00:00Z",
+                "last_restore_test_date": recent_test,
                 "snapshot_retention_days": 60,
                 "data_size_gb": 350.0
             }

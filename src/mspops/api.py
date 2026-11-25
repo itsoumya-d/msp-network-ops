@@ -23,6 +23,7 @@ from mspops.netops import check_compliance, outage_triage
 from mspops.resilience import SnapshotPolicy, calculate_resilience
 from mspops.email_security import audit_domain_email_security
 from mspops.smb1001_posture import SMB1001Auditor
+from mspops.m365_security import M365TenantAuditor
 from mspops.tickets import breach_summary, triage
 
 
@@ -263,5 +264,26 @@ def smb1001_posture(payload: SMB1001In) -> dict:
     data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
     report = SMB1001Auditor.audit_tenant(data)
     return report.to_dict()
+
+
+class M365TenantIn(BaseModel):
+    tenant_id: str
+    tenant_name: str = ""
+    legacy_auth_blocked: bool = True
+    admin_mfa_enforced: bool = True
+    user_mfa_pct: float = 1.0
+    external_forwarding_blocked: bool = True
+    mailbox_auditing_enabled: bool = True
+    guest_access_expiry_days: int = 90
+    sharepoint_external_sharing_restricted: bool = True
+    breakglass_accounts_monitored: bool = True
+
+
+@app.post("/security/m365-tenant-posture")
+def m365_tenant_posture(payload: M365TenantIn) -> dict:
+    data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
+    report = M365TenantAuditor.audit_tenant(data)
+    return report.to_dict()
+
 
 
